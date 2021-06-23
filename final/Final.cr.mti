@@ -1,0 +1,15 @@
+D:/School/FPGA/final/btn.v {1 {vlog -work work -stats=none D:/School/FPGA/final/btn.v
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module BTN
+
+Top level modules:
+	BTN
+
+} {} {}} D:/School/FPGA/final/debounce.v {1 {vlog -work work -stats=none D:/School/FPGA/final/debounce.v
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module debounce_explicit
+
+Top level modules:
+	debounce_explicit
+
+} {} {}}

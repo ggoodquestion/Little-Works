@@ -1,0 +1,109 @@
+module lcd_Ui(
+input CLK_50M,
+input wire[3:0] pos,
+input wire reset,
+output reg strataflash_ce,  // strataflash_ce = 1 to enable LCD for Spartan-3E
+// output reg strataflash_ce, // strataflash_ce = 1 to enable
+// LCD for Spartan-3E
+output reg LCD_E, LCD_RS, LCD_RW,
+output reg [7:0] LCD_DB // LCD_DB[3:0] = 1 for Spartan-3AN
+);
+localparam  [1:0]
+               zero  = 2'b00,
+               wait0 = 2'b01,
+               left  = 2'b10,
+					right = 2'b11;
+reg [1:0] state_reg, state_next;
+reg [23:0] count_next;
+reg [23:0] count = 0; // 23-bit count, 0-(2^23-1), less than 0.2 s
+reg [5:0] code; // {LCD_RS, LCD_RW, LCD_DB[7:4]}
+reg refresh; // refresh LCD rate @ about 200Hz
+reg swl, swr;
+reg [5:0] cursor;
+
+
+//Shift cursor
+
+
+always @*
+begin	
+
+count_next = count + 1;
+cursor = {2'b00, pos[3:0]};
+if(cursor > 6'h09)  cursor = 6'h09;
+
+		
+// refresh (enable) the LCD when bit 17 of the count is 1
+// (it flips when counted up to 2^17, and flips again after another 2^17)
+// flip rate about 200 (50MHz/(2^18))
+
+refresh = count[17];
+case (count [23:18]) // every 2^19 clocks = 10 ms (0 for 5 ms, 1 for 5 ms)
+// 5 ms > 4.1 ms
+0: code = 6'h03; // power-on initializatoin sequence
+1: code = 6'h03;
+2: code = 6'h03;
+3: code = 6'h02;
+4: code = 6'h02; // configuration
+5: code = 6'h08;
+6: code = 6'h00;
+7: code = 6'h06;
+8: code = 6'h00;
+9: code = 6'h0C;
+10: code = 6'h00;
+11: code = 6'h01;
+12: code = 6'h23; // wirte data, 0
+13: code = 6'h20;
+14: code = 6'h23; // 1
+15: code = 6'h21;
+16: code = 6'h23; // 2
+17: code = 6'h22;
+18: code = 6'h23; // 3
+19: code = 6'h23;
+20: code = 6'h23; // 4
+21: code = 6'h24;
+22: code = 6'h23; // 5
+23: code = 6'h25;
+24: code = 6'h23; // 6
+25: code = 6'h26;
+26: code = 6'h23; // 7
+27: code = 6'h27;
+28: code = 6'h23; // 8
+29: code = 6'h28;
+30: code = 6'h23; // 9
+31: code = 6'h29;
+32: code = 6'h0c; // change cursor
+33: code = cursor;
+34: code = 6'h2f; // show cursor
+35: code = 6'h2f;
+endcase
+end
+
+
+always @ (posedge CLK_50M, posedge reset)
+begin
+if (reset)
+begin
+count <= 0;
+state_reg <= zero;
+end
+else
+begin
+count <= count_next;
+state_reg <= state_next;
+strataflash_ce <= 1; // for Spartan 3E
+LCD_E <= refresh;
+LCD_RS <= code[5];
+LCD_RW <= code[4];
+LCD_DB[7] <= code[3];
+LCD_DB[6] <= code[2];
+LCD_DB[5] <= code[1];
+LCD_DB[4] <= code[0];
+LCD_DB[3] <= 1;
+LCD_DB[2] <= 1;
+LCD_DB[1] <= 1;
+LCD_DB[0] <= 1;
+end
+
+end
+endmodule

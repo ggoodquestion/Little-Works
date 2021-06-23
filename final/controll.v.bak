@@ -1,0 +1,24 @@
+module control(
+input CLK_50M, 
+input wire reset,
+input wire [3:0] pos,
+input wire comfirm,
+output wire strataflash_ce,  // strataflash_ce = 1 to enable LCD for Spartan-3E
+output wire LCD_E, LCD_RS, LCD_RW,
+output wire [7:0] LCD_DB, // LCD_DB[3:0] = 1 for Spartan-3AN
+output wire [3:0] led
+);
+//LCD control input
+wire sl_tick, sr_tick;
+wire syl;
+wire op_rd, op_wr;
+reg op_emp, op_full;
+reg [3:0] op_data;
+
+assign led = pos;
+lcd_Ui ui(CLK_50M, pos, comfirm, reset, strataflash_ce, LCD_E, LCD_RS, LCD_RW, LCD_DB, syl);
+
+fifo op(CLK_50M, reset, op_rd, op_wr, syl, op_emp, op_full, op_data);
+//
+
+endmodule
