@@ -84,10 +84,70 @@ plot(x);
 K =300; % For total 300 point
 F = zeros(1,K);
 
-for k=1:K
+for n=1:K
     tmp = 0;
-    for n=1:K
-        tmp = tmp + x(i) * exp(-1i*pi*n*k/K);
+    for k=1:K
+        tmp = tmp + x(k) * exp(-1i*2*pi*n*k/K);
     end
-    F(k) = abs(tmp) \
+    F(n) = 20*log10(abs(tmp));
+end
+
+% Flip spectrogram
+F_tmp(1:150) = F(151:300);
+F_tmp(151:300) = F(1:150);
+F = F_tmp;
+w = linspace(-1*pi, pi, K);
+
+subplot(2,1,2);
+plot(w,F);
+set(gca,'XTick',-pi:0.2*pi:pi);
+set(gca,'XTickLabel',{'-\pi','-0.8\pi','-0.6\pi','-0.4\pi','-0.2\pi', ...
+                        '0','0.2\pi','0.4\pi','0.6\pi','0.8\pi','\pi'});
+%% Implement LCCDE
+a1 = [1 -0.98*exp(1i*0.8*pi)];
+a2 = [1 -0.98*exp(-1i*0.8*pi)];
+
+b1 = [1 -0.8*(1i*0.4*pi)];
+b2 = [1 -0.8*(-1i*0.4*pi)];
+
+a = conv(a1,a2);
+b = conv(b1,b2);
+
+for k=1:4
+    ck = 0.95*exp(1i*(0.15*pi+0.02*pi*k));
+    ckp = conj(ck);
+
+    c1 = [ckp -1];
+    c2 = [ck -1];
+    % Square
+    c1 = conv(c1, c1);
+    c2 = conv(c2, c2);
+
+    d1 = [1 -ck];
+    d2 = [1 -ckp];
+    % Square
+    d1 = conv(d1, d1);
+    d2 = conv(d2, d2);
+
+    % compose coefficient
+    a = conv(a, c1);
+    a = conv(a, c2);
+    b = conv(b, d1);
+    b = conv(b, d2);
+end
+
+% Set y[0] at left of equation
+a = a/b(1);
+b = -b/b(1);
+b(1) = 0;
+
+%% Utilize LCCDE
+for i=1:300
+    % Input part
+    for j=1:length(a)
+        if i<j
+            continue
+        end
+        y(i) = 
+    end
 end
