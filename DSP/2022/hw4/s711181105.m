@@ -1,24 +1,30 @@
 clear all;
-M = 120;
-f = sinc_filter(M, 4000, 16000);
+P = 441;
 
-[x, fs] = audioread("input.wav");
+[x, fs] = audioread("input2.wav");
 fi = fs;
 fo = 8000;
 L = lcm(fi, fo) / fi;
 M = lcm(fi, fo) / fo;
+f = sinc_filter(P, 4000, fs*L)';
 y = up_sampling(x, L);
-r = down_sampling(y, M);
+a = zeros(P+length(y)-1, 2);
+a(:,1) = conv(y(:,1), f);
+a(:,2) = conv(y(:,2), f);
+r = down_sampling(a, M);
+audiowrite("output.wav", r, 8000);
+
+F = fft(f);
+plot(abs(F));
 
 function [p]=sinc_filter(M, fc, N)
-    h = zeros(1, M);
+    h = zeros(M, 1);
     
-    for i=0:2*M-1
-        n = i-M;
-        if n == 0
-            h(i+1) = 1;
+    for n=1:M
+        if n-M/2 == 0
+            h(n) = 1;
         else
-            h(i+1)=sin(2*pi*fc*n/N)/(n*pi);
+            h(n)=sin(2*pi*fc*(n-M/2)/N)/((n-M/2)*pi);
         end
     end
 
@@ -38,9 +44,12 @@ end
 
 function [y]=down_sampling(x, M)
     len_i = length(x);
-    len_o = len_i / M
+    len_o = ceil(len_i / M);
     y = zeros(len_o, 2);
     for i=1:len_i
-        y(i,:) = x(i*M, :)*L;
+        if i*M > len_i
+            break;
+        end
+        y(i,:) = x(i*M, :);
     end
 end

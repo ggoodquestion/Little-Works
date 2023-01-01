@@ -861,37 +861,37 @@ int main(int argc, char *argv[]){
     char *input = argv[1], *output = argv[2];
     Bmp bmp = readFile(input);
     initialize(bmp);
-    // convertToFreq();
-    // quantization();
+    convertToFreq();
+    quantization();
 
-    // /* Compression */
-    // DPCM();
-    // zigzag();
+    /* Compression */
+    DPCM();
+    zigzag();
     
-    // size_y =  RLE_size(AC_y);
-    // size_cb =  RLE_size(AC_cb);
-    // size_cr =  RLE_size(AC_cr);
-    // rle_y = (int*) malloc(sizeof(int) * size_y);
-    // rle_cb = (int*) malloc(sizeof(int) * size_cb);
-    // rle_cr = (int*) malloc(sizeof(int) * size_cr);
-    // RLE(AC_y, rle_y);
-    // RLE(AC_cb, rle_cb);
-    // RLE(AC_cr, rle_cr);
+    size_y =  RLE_size(AC_y);
+    size_cb =  RLE_size(AC_cb);
+    size_cr =  RLE_size(AC_cr);
+    rle_y = (int*) malloc(sizeof(int) * size_y);
+    rle_cb = (int*) malloc(sizeof(int) * size_cb);
+    rle_cr = (int*) malloc(sizeof(int) * size_cr);
+    RLE(AC_y, rle_y);
+    RLE(AC_cb, rle_cb);
+    RLE(AC_cr, rle_cr);
     
-    // //Huffman
+    //Huffman
     // huffman(size_y, size_cb, size_cr);
     // emptize(bmp);
     // D_huffman();
 
-    // I_RLE(AC_y, rle_y);
-    // I_RLE(AC_cb, rle_cb);
-    // I_RLE(AC_cr, rle_cr);
+    I_RLE(AC_y, rle_y);
+    I_RLE(AC_cb, rle_cb);
+    I_RLE(AC_cr, rle_cr);
 
-    // I_zigzag();
-    // I_DPCM();
+    I_zigzag();
+    I_DPCM();
 
-    // i_quantization();
-    // convertToBmp();
+    i_quantization();
+    convertToBmp();
     writeFile(output, bmp);
 
     printf("finish...");

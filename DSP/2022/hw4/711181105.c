@@ -80,16 +80,20 @@ double hamming(int P, int n) {
 void generateFilter(int P, int fc, int N, double* h) {
     // M: order, h: filter, N: sample rate, fc: cutoff frequency
     for (int n = 0; n < P; n++) {
-        h[n] = sin(2 * PI * fc * (n - P / 2)) / (PI * (n - P / 2));
-        h[n] *= hamming(P, n);
+        if(n-P/2 == 0){
+            h[n] = 1;
+            continue;
+        }
+        h[n] = sin(2 * PI * fc * (n - P / 2)/N) / (PI * (n - P / 2));
+        // h[n] *= hamming(P, n);
     }
 }
 
 void upSampling(Stereo *x, int size_i, int L, Stereo *y) {
     // x: input stereo data, L: Expand rate, size_i: Input data length
     for(int n = 0; n < size_i; n++){
-        y[n*L].left = x[n].left * L;
-        y[n*L].right = x[n].right * L;
+        y[n*L].left = x[n].left * 1;
+        y[n*L].right = x[n].right * 1;
     }
 }
 
@@ -106,8 +110,9 @@ void conv(Stereo* x, double* h, Stereo* y, int P, int size) {
         for (int k = 0; k < P; k++) {
             double tmp_l, tmp_r;
             if (n - k < 0){
-                tmp_l = 0;
-                tmp_r = 0;
+                // tmp_l = 0;
+                // tmp_r = 0;
+                continue;
             }else{
                 tmp_l = x[n - k].left;
                 tmp_r = x[n - k].right;
@@ -139,7 +144,7 @@ int main(int argc, char* argv[]) {
 
     int currRate;
     int L, M;
-    int P; // Filter order
+    int P = 256; // Filter order
 
     // Read file and get basic infomation.
     Header header;
@@ -179,9 +184,14 @@ int main(int argc, char* argv[]) {
 
     Stereo* x_c = (Stereo*) calloc(tmpSize, sizeof(Stereo));  // Cutoff data
     printf("%d\n", x_c[0]);
-    double *h = malloc(960 * sizeof(double));
-    generateFilter(960, 4000, tmpSampleRate, h);
-    conv(x_tmp, h, x_c, 960, tmpSize);
+    double *h = malloc(P * sizeof(double));
+    generateFilter(P, 4000, tmpSampleRate, h);
+    
+    for(int i = 0; i < P; i++) {
+        printf("%lf\n", h[i]);
+    }
+
+    conv(x_tmp, h, x_c, P, tmpSize);
 
     /*---------------- Filtering End ----------------*/
 

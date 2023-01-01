@@ -48,27 +48,53 @@ int lcm(int m, int n) {
     return m * n / gcd(m, n);
 }
 
-// void LPF(Complex *l_X, Complex *r_X, int gain, int M, int tmpSampleRate){
-//     int cutoff = (M * N / tmpSampleRate)-1;
-//     for(int k = 0; k < N; k++){
-//         if( k  <= cutoff || k >= N-cutoff ){
-//             l_X[k].real *= gain;
-//             r_X[k].real *= gain;
-//             l_X[k].img *= gain;
-//             r_X[k].img *= gain;
-//         }else{
-//             l_X[k].real = 0;
-//             r_X[k].real = 0;
-//             l_X[k].img = 0;
-//             r_X[k].img = 0;
-//         }
-//     }
-// }
+Header readHeader(FILE *fp){
+    Header header;
+
+    fread(header.chunckId, 4, sizeof(char), fp);
+    fread(&header.chunckSize, 1, sizeof(int), fp);
+    fread(header.fileFormat, 4, sizeof(char), fp);
+    fread(header.subChunckId1, 4, sizeof(char), fp);
+    fread(&header.subChunckSize1, 1, sizeof(int), fp);
+    fread(&header.waveFmt, 1, sizeof(short), fp);
+    fread(&header.numChannel, 1, sizeof(short), fp);
+    fread(&header.sampleRate, 1, sizeof(int), fp);
+    fread(&header.byteRate, 1, sizeof(int), fp);
+    fread(&header.blockAlign, 1, sizeof(short), fp);
+    fread(&header.bitsPerSample, 1, sizeof(short), fp);
+    fread(header.subChunckId2, 4, sizeof(char), fp);
+    fread(&header.subChunckSize2, 1, sizeof(int), fp);
+
+    return header;
+}
+
+void writeHeader(FILE *fp, Header header){\
+    fwrite(header.chunckId, 4, sizeof(char), fp);
+    fwrite(&header.chunckSize, 1, sizeof(int), fp);
+    fwrite(header.fileFormat, 4, sizeof(char), fp);
+    fwrite(header.subChunckId1, 4, sizeof(char), fp);
+    fwrite(&header.subChunckSize1, 1, sizeof(int), fp);
+    fwrite(&header.waveFmt, 1, sizeof(short), fp);
+    fwrite(&header.numChannel, 1, sizeof(short), fp);
+    fwrite(&header.sampleRate, 1, sizeof(int), fp);
+    fwrite(&header.byteRate, 1, sizeof(int), fp);
+    fwrite(&header.blockAlign, 1, sizeof(short), fp);
+    fwrite(&header.bitsPerSample, 1, sizeof(short), fp);
+    fwrite(header.subChunckId2, 4, sizeof(char), fp);
+    fwrite(&header.subChunckSize2, 1, sizeof(int), fp);
+}
 
 void clearArray(Stereo* a, int size) {
     for (int i = 0; i < size; i++) {
         a[i].left = 0;
         a[i].right = 0;
+    }
+}
+
+void copyArray(Stereo* a, Stereo* b, int size) {
+    for (int i = 0; i < size; i++) {
+        a[i].left = b[i].left;
+        a[i].right = b[i].right;
     }
 }
 
@@ -118,6 +144,8 @@ void conv(Stereo* x, double* h, Stereo* y, int P, int size) {
     }
 }
 
+
+
 int main(int argc, char* argv[]) {
     /*------------ Initialize file ------------*/
     // Varialbe declare.
@@ -130,86 +158,88 @@ int main(int argc, char* argv[]) {
     f_output = fopen(outputName, "wb");
     /*------------ Initialize file ------------*/
 
-    /*------------ Read file start ------------*/
-    printf("Read file.\n");
-    // Utils varible declare
-    int rawSize;  // Wav data size(byte)
-    int size;     // Wav data point number
-    Stereo* x;
+    int inputSize, outputSize, tmpSize; // File size in bytes
+    int size_i, size_tmp, size_o; // Number of points
+    int srcFs, tarFs, tmpFs;
+    int L, M; // L: expand rate, M: compress rate
+    int P = 960; // Filter order
 
-    int currRate;
-    int L, M;
-    int P; // Filter order
-
-    // Read file and get basic infomation.
-    Header header;
-    fread(&header, 1, sizeof(Header), f_source);
-    rawSize = header.subChunckSize2;
-    size = rawSize / (header.bitsPerSample / 8 * header.numChannel);
-    currRate = header.sampleRate;
-
-    // Read wav data point;
-    x = calloc(size, sizeof(Stereo));
-    fread(x, 1, rawSize, f_source);
-    fclose(f_source);
-
-    /*------------ Read file end ------------*/
-
-    /*------------------ Up Sampling -------------------*/
-    printf("Up sampling.\n");
-
-    int tmpSampleRate = lcm(8000, header.sampleRate);
-    L = tmpSampleRate / currRate;
-    int tmpSize = L * size;
-    Stereo* x_tmp = (Stereo*) calloc(tmpSize, sizeof(Stereo));
-
-    // Up sampling
-    upSampling(x, size, L, x_tmp);
-
-    // for(int i = 0; i < tmpSize; i++){
-    //     printf("%d, %d\t", x_tmp[i].left, x_tmp[i].right);
-    // }
-    free(x);
-    /*---------------- Up Sampling End ----------------*/
-
-    /*---------------- Filtering Start ----------------*/
-    printf("Filtering.\n");
-
-    // Delcare freq table
-
-    Stereo* x_c = (Stereo*) calloc(tmpSize, sizeof(Stereo));  // Cutoff data
-    printf("%d\n", x_c[0]);
-    double *h = malloc(960 * sizeof(double));
-    generateFilter(960, 4000, tmpSampleRate, h);
-    conv(x_tmp, h, x_c, 960, tmpSize);
-
-    /*---------------- Filtering End ----------------*/
-
-    /*------------------ Down Sampling -------------------*/
-    /*             Origin:44.1k -> Target: 8k             */
-    printf("Down sampling.\n");
-    currRate = 8000;
-    M = tmpSampleRate / currRate;
-    int outputSize = tmpSize / M;
-    printf("%d\n", outputSize);
-    Stereo* x_o = calloc(outputSize, sizeof(Stereo));
-
-    downSampling(x_tmp, outputSize, M, x_o);
+    /* Prepare headers and Parameters */
+    // Read and make a new header
+    printf("Read and prepare.\n");
+    Header header_i = readHeader(f_source);
+    inputSize = header_i.subChunckSize2;
+    srcFs = header_i.sampleRate;
+    size_i = inputSize / (header_i.bitsPerSample / 8 * header_i.numChannel);
     
-    /*---------------- Down Sampling End ----------------*/
+    tarFs = 8000;
+    tmpFs = lcm(srcFs, tarFs);
+    L = tmpFs / srcFs;
+    M = tmpFs / tarFs;
+    tmpSize = inputSize * L;
+    outputSize = outputSize / M;
+    size_tmp = L * size_i;
+    size_o = size_tmp / M;
 
-    /*------------ Write file start ------------*/
-    header.sampleRate = 8000;
-    header.byteRate =
-        header.sampleRate * header.numChannel * header.bitsPerSample / 8;
-    header.subChunckSize2 =
-        outputSize * header.bitsPerSample * header.numChannel / 8;
+    Header header_o = header_i;
+    header_o.subChunckSize2 = outputSize;
+    header_o.chunckSize = outputSize + 44;
+    header_o.sampleRate = tarFs;
+    header_o.byteRate = tarFs * header_o.bitsPerSample * header_o.numChannel / 8;
+    writeHeader(f_output, header_o); // Write into file
 
-    fwrite(&header, 1, sizeof(Header), f_output);
-    fwrite(x_o, 1, header.subChunckSize2, f_output);
+    double *h = (double *) malloc(sizeof(double)*P);
+    generateFilter(P, tarFs/2, tmpFs, h);
+ 
+    /*     Header End     */
+
+    /*    Do the work buffer by buffer    */
+    int bufSize_i = P / L;
+    int bufSize_o = P / M;
+    int frameNum = floor(size_i / bufSize_i); // To avoid memory full, process in frame by frame
+    Stereo *buf_i = calloc(bufSize_i, sizeof(Stereo));
+    Stereo *buf_p = calloc(P, sizeof(Stereo)); // Previous buffer for tmp
+    Stereo *buf_c = calloc(P, sizeof(Stereo)); // Current buffer for tmp
+    Stereo *buf_cc = calloc(2*P, sizeof(Stereo)); // concate buffer for tmp
+    Stereo *buf_f = calloc(2*P, sizeof(Stereo)); // flitered buffer for tmp
+    Stereo *buf_s = calloc(P, sizeof(Stereo)); // sperate from buf_cc
+    Stereo *buf_r = calloc(bufSize_o, sizeof(Stereo)); // result of flitered buffer in tar fs
+    int currReadNum, remain;
+    
+    printf("Do it buffer by buffer.\n");
+    for(int n = 0; n < frameNum; n++){
+        printf("%d\n", n);
+        if(n == frameNum - 1){
+            remain = size_i - n * bufSize_i;
+            currReadNum = (remain % bufSize_i == 0) ? bufSize_i : remain % bufSize_i;
+        }else{
+            currReadNum = bufSize_i; 
+        }
+        fread(buf_i, currReadNum, sizeof(Stereo), f_source);
+        for(int i = 0; i < bufSize_i; i++){
+            // printf("%d, %d\n", buf_i[i].left, buf_i[i].right);
+        }
+        upSampling(buf_i, bufSize_i, L, buf_c);
+        for(int i = 0; i < P; i++){
+            buf_cc[i] = buf_p[i];
+            buf_cc[P+i] = buf_c[i];
+            // printf("%d, %d\n", buf_c[i].left, buf_c[i].right);
+        }
+        conv(buf_cc, h, buf_f, P, 2*P);
+        for(int i = 0; i < P; i++){
+            buf_s[i] = buf_f[P+i];
+            // printf("%d, %d\n", buf_s[i].left, buf_s[i].right);
+        }
+        downSampling(buf_s, bufSize_o, M, buf_r);
+        // printf("%d, %d\n", buf_r->left, buf_r->right);
+        fwrite(buf_r, bufSize_o, sizeof(Stereo), f_output);
+
+        copyArray(buf_p, buf_c, P);
+        clearArray(buf_c, P);
+    }
+
+
+    fclose(f_source);
     fclose(f_output);
-
-    /*------------ Write file end ------------*/
-
     printf("finish\n");
 }
