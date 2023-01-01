@@ -103,3 +103,58 @@ plot(w,F);
 set(gca,'XTick',-pi:0.2*pi:pi);
 set(gca,'XTickLabel',{'-\pi','-0.8\pi','-0.6\pi','-0.4\pi','-0.2\pi', ...
                         '0','0.2\pi','0.4\pi','0.6\pi','0.8\pi','\pi'});
+%% Implement LCCDE
+a1 = [1 -0.98*exp(1i*0.8*pi)];
+a2 = [1 -0.98*exp(-1i*0.8*pi)];
+
+b1 = [1 -0.8*(1i*0.4*pi)];
+b2 = [1 -0.8*(-1i*0.4*pi)];
+
+a = conv(a1,a2);
+b = conv(b1,b2);
+
+for k=1:4
+    ck = 0.95*exp(1i*(0.15*pi+0.02*pi*k));
+    ckp = ck';
+
+    c1 = [ckp -1];
+    c2 = [ck -1];
+    at = conv(c1, c2);
+    at = conv(at, at);
+    a = conv(a, at);
+
+    d1 = [1 -ck];
+    d2 = [1 -ckp];
+    bt = conv(d1, d2);
+    bt = conv(bt, bt);
+    b = conv(b, bt);
+end
+
+% Set y[0] at left of equation
+a = a/b(1);
+b = -b/b(1);
+b(1) = 0;
+
+%% Utilize LCCDE
+y = zeros(1,300);
+for i=1:300
+    % Input part
+    for j=1:length(a)
+        if i<j
+            continue
+        end
+        y(i) = a(j)*x(i-j+1) + y(i);
+    end
+
+    % Output part
+    for j=1:length(b)
+        if i<j
+            continue
+        end
+        y(i) = b(j)*y(i-j+1) + y(i);
+    end
+end
+
+figure(4);
+subplot(2,1,1);
+plot(y);
