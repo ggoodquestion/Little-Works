@@ -1,0 +1,23 @@
+class Setting():
+    
+    def __init__(self):
+        self.__tick = 48
+        self.__allowId = [0, 2, 4, 5]
+    
+    @property
+    def tick(self):
+        return self.__tick
+    
+    def isAllowed(self, id):
+        for i in self.__allowId:
+            if id == i:
+                return True
+        return False
+    
+def isNear(nx, ny, item):
+    if abs(nx - item.x) == Setting.tick or abs(ny - item.y) == Setting.tick:
+        print(item.x)
+        print(item.y)
+        return True
+    else:
+        return False

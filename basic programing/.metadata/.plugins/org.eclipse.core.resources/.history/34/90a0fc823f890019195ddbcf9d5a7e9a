@@ -1,0 +1,65 @@
+import pygame
+import os
+from Block import block as bk
+from Setting import setting
+
+os.chdir('./')
+tick = setting.Setting().tick
+fname = 'map.txt'
+
+
+
+def drawMap(screen):
+    map = open(fname)
+    line = map.readline()
+    a = 0
+    while line:
+        list = line.split(' ')
+        for i in range(len(list)):
+            wall = bk.Wall(screen)
+            if(int(list[i]) == wall.Id):
+                wall.blitme((i*tick, a*tick))
+        a += 1
+        line = map.readline()
+        pygame.display.update()
+    
+    map = open(fname)
+    return map.readlines()
+
+def findBlockByPosition(x, y):
+    map = open(fname)
+    mapList = map.readlines()
+    pos = []
+    xl = mapList[int(y/tick)].split(' ')
+    try:
+        xp = xl[int(x/tick)-1]
+        #print(int(xp))
+        pos.append(int(xp))
+    except:
+        pos.append(-1)
+        #print('-1')
+    try:
+        xn = xl[int(x/tick)+1]
+        #print(int(xn))
+        pos.append(int(xn))
+    except:
+        pos.append(-1)
+        #print('-1')
+    try:
+        ypl = mapList[int(y/tick)-1].split(' ')
+        yp = ypl[int(x/tick)]
+        pos.append(int(yp))
+        #print(int(yp))
+    except:
+        pos.append(-1)
+        #print('-1')
+    try:
+        ynl = mapList[1].split(' ')
+        yn = ypl[0]
+        pos.append(int(yn))
+        print(yn)
+    except:
+        pos.append(-1)
+        print('-1')
+    
+    return pos

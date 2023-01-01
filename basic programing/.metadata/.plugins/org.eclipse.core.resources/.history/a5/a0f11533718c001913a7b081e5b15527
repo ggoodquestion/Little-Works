@@ -1,0 +1,9 @@
+import GUI.gui as gui
+import pygame
+
+def displayLoby(screen):
+    loby = gui.Loby(screen)
+    gp = pygame.sprite.Group()
+    gp.add(loby)
+    gp.draw(screen)
+    gp.empty()

@@ -1,0 +1,13 @@
+MODULES_MANAGER_V2
+Block.__init__|D:\使用者\boss\Desktop\assignment\workplace\FinalProject\Block\__init__.py
+Block.block|D:\使用者\boss\Desktop\assignment\workplace\FinalProject\Block\block.py
+Entity.__init__|D:\使用者\boss\Desktop\assignment\workplace\FinalProject\Entity\__init__.py
+Entity.entity|D:\使用者\boss\Desktop\assignment\workplace\FinalProject\Entity\entity.py
+GUI.GUIdisplay|D:\使用者\boss\Desktop\assignment\workplace\FinalProject\GUI\GUIdisplay.py
+GUI.__init__|D:\使用者\boss\Desktop\assignment\workplace\FinalProject\GUI\__init__.py
+GUI.gui|D:\使用者\boss\Desktop\assignment\workplace\FinalProject\GUI\gui.py
+Setting.__init__|D:\使用者\boss\Desktop\assignment\workplace\FinalProject\Setting\__init__.py
+Setting.setting|D:\使用者\boss\Desktop\assignment\workplace\FinalProject\Setting\setting.py
+add2020map|D:\使用者\boss\Desktop\assignment\workplace\FinalProject\add2020map.py
+drawMap|D:\使用者\boss\Desktop\assignment\workplace\FinalProject\drawMap.py
+main|D:\使用者\boss\Desktop\assignment\workplace\FinalProject\main.py

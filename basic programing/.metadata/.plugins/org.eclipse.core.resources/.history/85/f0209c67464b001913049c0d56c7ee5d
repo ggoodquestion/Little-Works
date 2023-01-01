@@ -1,0 +1,32 @@
+/*
+ * practice.cpp
+ *
+ *  Created on: 2019 3 21
+ *      Author: 1MF08
+ */
+#include<iostream>
+#include<string>
+#include<iomanip>
+#include "Student.h"
+using namespace std;
+
+int main(){
+	/*
+	Student student;
+	student.setFirstName("ggggggg");
+	cout << "Get student firstName :" << student.getFirstName() << endl;
+	student.printFirstName();
+	*/
+
+	Student student(2.777);
+	student.setFirstName("Su");
+	student.setLastName("J-J");
+	student.printFirstName();
+	student.printLastName();
+	cout << "Test for student's first and last name: " << student.getFirstName() << " " << student.getLastName() << "." << endl;
+	cout << "\nTest for student's GPA: " << student.getGPA() << setprecision(2) << "." << endl;
+	student.printGPA();
+	student.computeGPA(2.5, 1.3, 5.1, 2.0, 1.4);
+	cout << "Test for changed GPA: " << student.getGPA() << endl;
+	student.printGPA();
+}

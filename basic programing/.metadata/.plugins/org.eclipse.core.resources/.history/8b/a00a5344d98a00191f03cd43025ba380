@@ -1,0 +1,27 @@
+class Setting():
+    
+    def __init__(self):
+        self.__tick = 48
+        self.__allowId = [0, 2, 4, 5]
+    
+    @property
+    def tick(self):
+        return self.__tick
+    
+    def isAllowed(self, id):
+        for i in self.__allowId:
+            if id == i:
+                return True
+        return False
+    
+def isNear(nx, ny, item):
+    sets = Setting()
+    print(Setting.tick)
+    if abs(nx - item.x) == Setting.tick or abs(ny - item.y) == 48:
+        print(item.x)
+        print(item.y)
+        print(nx)
+        print(ny)
+        return True
+    else:
+        return False

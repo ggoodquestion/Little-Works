@@ -1,0 +1,31 @@
+import pygame
+
+class Loby(pygame.sprite.Sprite):
+    
+    def __init__(self, screen):
+        font = pygame.font.SysFont('fangsong', 40)
+        txtStart = font.render('START', True, (100,0,0), (220,220,220))
+        txtQuit = font.render('Quit', True, (100,0,0), (220,220,220))
+        pygame.sprite.Sprite.__init__(self)
+        start = pygame.Surface((400, 100))
+        start.fill((220,220,220))
+        start.blit(txtStart, (160, 40))
+        quit = pygame.Surface((400, 100))
+        quit.fill((220,220,220))
+        quit.blit(txtQuit, (170, 40))
+        self.image = pygame.Surface(screen.get_size())
+        self.image.fill((255, 255, 255))
+        self.image.blit(start, (376, 500))
+        self.image.blit(quit, (376, 650))
+        self.rect = self.image.get_rect()
+        
+class Final(pygame.sprite.Sprite):
+    src = '.img/game_over.png'
+    def __init__(self, screen, win):
+        pygame.sprite.Sprite.__init__(self)
+        if win:
+            self.src = './img/win.png'
+        font = pygame.font.SysFont('fangsong', 40)
+        txtStart = font.render('Home', True, (100,0,0), (220,220,220))
+        home - pygame.Surface(screen.get_size())
+            

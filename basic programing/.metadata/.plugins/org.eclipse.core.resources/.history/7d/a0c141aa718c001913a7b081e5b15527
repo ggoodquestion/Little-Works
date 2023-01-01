@@ -1,0 +1,18 @@
+#-*- coding: cp950 -*-
+import GUI.GUIdisplay as gd
+import pygame as pg
+
+
+
+
+
+execute = True
+while execute:
+    pg.init()
+    pg.mixer.init()
+    
+    gd.inGame(screen)
+
+
+
+    

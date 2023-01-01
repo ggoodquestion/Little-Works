@@ -1,0 +1,17 @@
+#-*- coding: cp950 -*-
+import GUI.GUIdisplay as gd
+
+
+
+
+
+execute = True
+while execute:
+    pg.init()
+    pg.mixer.init()
+    
+    inGame()
+
+
+
+    

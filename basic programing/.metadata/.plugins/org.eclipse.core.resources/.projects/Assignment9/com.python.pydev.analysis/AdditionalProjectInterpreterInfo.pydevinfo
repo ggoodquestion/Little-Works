@@ -1,0 +1,25 @@
+-- VERSION_5
+-- START DISKCACHE_2
+D:\使用者\boss\Desktop\assignment\workplace\.metadata\.plugins\org.eclipse.core.resources\.projects\Assignment9\com.python.pydev.analysis\v2_indexcache
+main|1560075074166628000|D:\使用者\boss\Desktop\assignment\workplace\Assignment9\main.py
+-- END DISKCACHE
+-- START DICTIONARY
+2
+1=D:\使用者\boss\Desktop\assignment\workplace\Assignment9\main.py
+2=main
+-- END DICTIONARY
+-- START TREE 1
+9
+a|1|a!1^36#5*19@
+dis|1|dis!1^23#1*19@
+htm|1|html!1^19#1*19@
+res|3|res2!1^33#1*19@res1!1^22#1*19@res!1^18#1*19@
+sor|1|sortDict!1^5#5*18@
+str|1|str!1^37#5*19@
+tmp|2|tmp1!1^21#1*19@tmp2!1^32#1*19@
+tot|1|total!1^24#1*19@
+url|1|url!1^17#1*19@
+-- END TREE
+-- START TREE 2
+0
+-- END TREE

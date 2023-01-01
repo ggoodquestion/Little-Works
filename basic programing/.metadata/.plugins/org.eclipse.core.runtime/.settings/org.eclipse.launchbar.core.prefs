@@ -1,0 +1,11 @@
+LaunchTargetManager/configs/Assignment3.exe=org.eclipse.launchbar.core.launchTargetType.local\:Local
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/arch=x86_64
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/name=Local
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/os=win32
+configDescList=org.eclipse.launchbar.core.descriptorType.default\:Assignment6 MyMoudel.py,org.eclipse.launchbar.core.descriptorType.default\:Assignment6 test.py,org.eclipse.launchbar.core.descriptorType.default\:Assignment7 test.py,org.eclipse.launchbar.core.descriptorType.default\:Assignment7 testForAnotherWay.py,org.eclipse.launchbar.core.descriptorType.default\:Assignment8 test.py,org.eclipse.launchbar.core.descriptorType.default\:Assignment9 main.py,org.eclipse.launchbar.core.descriptorType.default\:practice StringManipulation.py,org.eclipse.launchbar.core.descriptorType.default\:Assignment1.exe,org.eclipse.launchbar.core.descriptorType.default\:Assignment2.exe,org.eclipse.launchbar.core.descriptorType.default\:Assignment3.exe,org.eclipse.launchbar.core.descriptorType.default\:Assignment4.exe,org.eclipse.launchbar.core.descriptorType.default\:Assignment5.exe,org.eclipse.launchbar.core.descriptorType.default\:FinalProject main.py,org.eclipse.launchbar.core.descriptorType.default\:Assignment10 main.py
+eclipse.preferences.version=1
+org.eclipse.launchbar.core.descriptorType.default\:Assignment1.exe/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:Assignment1.exe/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
+org.eclipse.launchbar.core.descriptorType.default\:Assignment2.exe/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:Assignment2.exe/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
+org.eclipse.launchbar.core.descriptorType.default\:FinalProject\ main.py/activeLaunchMode=run

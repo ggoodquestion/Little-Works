@@ -1,0 +1,64 @@
+import pygame as pg
+import Block.block.Item as Item
+
+class Entity():
+
+    def __init__(self, screen, hp, atk, x, y, src):
+        self.__img = pg.image.load(src)
+        self.__hp = hp
+        self.__atk = atk
+        self.__screen = screen
+        self.__x = x
+        self.__y = y
+        
+    @property
+    def Hp(self):
+        return self.hp
+    
+    @Hp.setter
+    def Hp(self, hp):
+        self.__hp = hp
+        
+    @property
+    def Atk(self):
+        return self.__atk
+    
+    @Atk.setter
+    def Atk(self, atk):
+        self.__atk = atk
+        
+    def blitme(self, coordinate, nc):
+        if coordinate[0] != nc[0] or coordinate[1] != nc[1]:
+            surf = pg.Surface((48,48))
+            surf.fill((100,100,100))
+            self.__screen.blit(surf, nc)
+        self.__screen.blit(self.__img, coordinate)
+    
+    def x(self):
+        return self.__x
+    
+    def y(self):
+        return self.__y
+    
+    def setPosition(self, x, y):
+        self.__x = x
+        self.__y = y
+        
+    def img(self):
+        return self.__img
+        
+class Player(Entity):
+    
+    def __init__(self, screen, hp = 10, atk = 2, x = 0, y = 0, src='./img/player.png'):
+        super().__init__(screen, hp, atk, x, y, src)
+        self.__inventory = []
+        
+    def Inventory(self):
+        return self.__inventory
+    
+    def addItem(self, item):
+        self.__inventory.append(item)
+
+class Monster(Entity):
+    def __init__(self, screen, hp, atk, x, y, src):
+        super().__init__(screen, hp, atk, x, y, src)

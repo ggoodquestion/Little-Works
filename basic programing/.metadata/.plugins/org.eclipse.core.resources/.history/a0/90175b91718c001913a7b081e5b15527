@@ -1,0 +1,17 @@
+#-*- coding: cp950 -*-ssw
+
+
+
+
+
+
+execute = True
+while execute:
+    pg.init()
+    pg.mixer.init()
+    
+    inGame()
+
+
+
+    

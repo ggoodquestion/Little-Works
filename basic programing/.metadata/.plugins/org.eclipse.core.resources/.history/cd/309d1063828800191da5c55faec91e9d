@@ -1,0 +1,12 @@
+import matplotlib
+import matplotlib.pyplot as plt
+import  numpy as np
+
+arr = np.array([[0.6, 0.4],[0.3,0.7]])
+a = np.linalg.eig(arr)
+
+plt.plot([1,2,3,4])
+plt.plot([2,4,6,8])
+plt.ylabel("y-axis")
+plt.xlabel("x-axis")
+plt.show()

@@ -1,0 +1,20 @@
+import GUI.gui as gui
+import pygame as pg
+import os
+import sys
+import drawMap
+import GUI.GUIdisplay as gg
+from pygame.locals import *
+from Block import block
+from Entity import entity
+from Setting import setting
+from Setting.setting import isNear, isMouseOnIt, printMsg, bgColor
+import pygame
+
+def displayLoby(screen):
+    loby = gui.Loby(screen)
+    gp = pygame.sprite.Group()
+    gp.add(loby)
+    gp.draw(screen)
+    
+    while()

@@ -1,0 +1,9 @@
+10:21:08 **** Incremental Build of configuration Debug for project Assignment5 ****
+Info: Internal Builder is used for build
+g++ -O0 -g3 -Wall -c -fmessage-length=0 -o StudentTest.o "..\\StudentTest.cpp" 
+g++ -o Assignment5.exe CEStudent.o Student.o StudentTest.o 
+Info: Nothing to build for Assignment5
+10:21:46 **** Incremental Build of configuration Debug for project Assignment5 ****
+Info: Internal Builder is used for build
+g++ -O0 -g3 -Wall -c -fmessage-length=0 -o StudentTest.o "..\\StudentTest.cpp" 
+g++ -o Assignment5.exe CEStudent.o Student.o StudentTest.o 
