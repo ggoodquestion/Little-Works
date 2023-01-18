@@ -1,21 +1,51 @@
 clear all;
-P = 441;
+P = 440;
 
-[x, fs] = audioread("input2.wav");
-fi = fs;
+[x, fs] = audioread("input3.wav");
+fi = 44100;
 fo = 8000;
 L = lcm(fi, fo) / fi;
 M = lcm(fi, fo) / fo;
-f = sinc_filter(P, 4000, fs*L)';
+fc = fs*L;
+f = sinc_filter(P, 4000, fc)';
+
+f1 = sinc_filter(P, fc/3/2, fc)';
+fc = fc / 3;
+f2 = sinc_filter(P, fc/3/2, fc)';
+fc = fc / 3;
+f3 = sinc_filter(P, fc/7/2, fc)';
+fc = fc / 7;
+f4 = sinc_filter(P, fc/7/2, fc)';
 y = up_sampling(x, L);
+
+% down 3
 a = zeros(P+length(y)-1, 2);
-a(:,1) = conv(y(:,1), f);
-a(:,2) = conv(y(:,2), f);
-r = down_sampling(a, M);
+a(:,1) = conv(y(:,1), f1);
+a(:,2) = conv(y(:,2), f1);
+a = down_sampling(a, 3);
+
+% down 3
+y = zeros(P+length(a)-1, 2);
+y(:,1) = conv(a(:,1), f2);
+y(:,2) = conv(a(:,2), f2);
+y = down_sampling(y, 3);
+
+% down 7
+a = zeros(P+length(y)-1, 2);
+a(:,1) = conv(y(:,1), f3);
+a(:,2) = conv(y(:,2), f3);
+a = down_sampling(a, 7);
+
+% down 7
+y = zeros(P+length(a)-1, 2);
+y(:,1) = conv(a(:,1), f4);
+y(:,2) = conv(a(:,2), f4);
+r = down_sampling(y, 7);
+
 audiowrite("output.wav", r, 8000);
 
 F = fft(f);
-plot(abs(F));
+%plot(abs(F));
 
 function [p]=sinc_filter(M, fc, N)
     h = zeros(M, 1);

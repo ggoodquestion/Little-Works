@@ -77,14 +77,14 @@ double hamming(int P, int n) {
     return res;
 }
 
-void generateFilter(int P, int fc, int N, double* h) {
+void generateFilter(int P, int fc, int N, double* h, int gain) {
     // M: order, h: filter, N: sample rate, fc: cutoff frequency
     for (int n = 0; n < P; n++) {
         if(n-P/2 == 0){
-            h[n] = 1;
-            continue;
+            h[n] = 1 * gain;
+        }else{
+            h[n] = gain * sin(2 * PI * fc * (n - P / 2) / N) / (PI * (n - P / 2));
         }
-        h[n] = sin(2 * PI * fc * (n - P / 2)/N) / (PI * (n - P / 2));
         // h[n] *= hamming(P, n);
     }
 }
@@ -105,8 +105,7 @@ void downSampling(Stereo* x, int size_o, int M, Stereo* y) {
 }
 void conv(Stereo* x, double* h, Stereo* y, int P, int size) {
     for (int n = 0; n < size; n++) {
-        y[n].left = 0;
-        y[n].right = 0;
+        double y_l = 0, y_r = 0;
         for (int k = 0; k < P; k++) {
             double tmp_l, tmp_r;
             if (n - k < 0){
@@ -117,9 +116,13 @@ void conv(Stereo* x, double* h, Stereo* y, int P, int size) {
                 tmp_l = x[n - k].left;
                 tmp_r = x[n - k].right;
             }
-            y[n].left += (short)(h[k] * tmp_l);
-            y[n].right += (short)(h[k] * tmp_r);
+            y_l += (h[k] * tmp_l);
+            y_r += (h[k] * tmp_r);
         }
+        y[n].left = (y_l > 32767) ? 32767 : y_l;
+        y[n].right = (y_r > 32767) ? 32767 : y_r;
+        // printf("%d, %d\n", y[n].left, y[n].right);
+        // printf("%lf, %lf\n", y_l, y_r);
     }
 }
 
@@ -144,7 +147,7 @@ int main(int argc, char* argv[]) {
 
     int currRate;
     int L, M;
-    int P = 256; // Filter order
+    int P = 441; // Filter order
 
     // Read file and get basic infomation.
     Header header;
@@ -157,6 +160,10 @@ int main(int argc, char* argv[]) {
     x = calloc(size, sizeof(Stereo));
     fread(x, 1, rawSize, f_source);
     fclose(f_source);
+
+    // for(int i = 0; i < size; i++){
+    //     printf("%d, %d\n", x[i].left, x[i].right);
+    // }
 
     /*------------ Read file end ------------*/
 
@@ -185,11 +192,11 @@ int main(int argc, char* argv[]) {
     Stereo* x_c = (Stereo*) calloc(tmpSize, sizeof(Stereo));  // Cutoff data
     printf("%d\n", x_c[0]);
     double *h = malloc(P * sizeof(double));
-    generateFilter(P, 4000, tmpSampleRate, h);
+    generateFilter(P, 4000, tmpSampleRate, h, L);
     
-    for(int i = 0; i < P; i++) {
-        printf("%lf\n", h[i]);
-    }
+    // for(int i = 0; i < P; i++) {
+    //     printf("%lf\n", h[i]);
+    // }
 
     conv(x_tmp, h, x_c, P, tmpSize);
 
@@ -205,6 +212,9 @@ int main(int argc, char* argv[]) {
     Stereo* x_o = calloc(outputSize, sizeof(Stereo));
 
     downSampling(x_tmp, outputSize, M, x_o);
+    // for(int i = 0; i < outputSize; i++) {
+    //     printf("%d, %d\n", x_o[i].left, x_o[i].right);
+    // }
     
     /*---------------- Down Sampling End ----------------*/
 
