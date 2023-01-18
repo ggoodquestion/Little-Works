@@ -35,6 +35,12 @@ typedef struct STEREO {
     short right;
 } Stereo;
 
+typedef struct TMP_STEREO {
+    Stereo *data;
+    double sr_times; // Sampling times
+    int isClean; // If data being processed
+} TmpStereo;
+
 int gcd(int m, int n) {
     while (n != 0) {
         int r = m % n;
@@ -48,23 +54,6 @@ int lcm(int m, int n) {
     return m * n / gcd(m, n);
 }
 
-// void LPF(Complex *l_X, Complex *r_X, int gain, int M, int tmpSampleRate){
-//     int cutoff = (M * N / tmpSampleRate)-1;
-//     for(int k = 0; k < N; k++){
-//         if( k  <= cutoff || k >= N-cutoff ){
-//             l_X[k].real *= gain;
-//             r_X[k].real *= gain;
-//             l_X[k].img *= gain;
-//             r_X[k].img *= gain;
-//         }else{
-//             l_X[k].real = 0;
-//             r_X[k].real = 0;
-//             l_X[k].img = 0;
-//             r_X[k].img = 0;
-//         }
-//     }
-// }
-
 void clearArray(Stereo* a, int size) {
     for (int i = 0; i < size; i++) {
         a[i].left = 0;
@@ -77,15 +66,16 @@ double hamming(int P, int n) {
     return res;
 }
 
-void generateFilter(int P, int fc, int N, double* h, int gain) {
+void generateFilter(int P, double wc, int N, double* h) {
     // M: order, h: filter, N: sample rate, fc: cutoff frequency
     for (int n = 0; n < P; n++) {
         if(n-P/2 == 0){
-            h[n] = 1 * gain;
-        }else{
-            h[n] = gain * sin(2 * PI * fc * (n - P / 2) / N) / (PI * (n - P / 2));
+            h[n] = h[n-1];
+            continue;
         }
-        // h[n] *= hamming(P, n);
+        h[n] = sin(wc * (n - P / 2)) / (PI * (n - P / 2));
+        h[n] *= hamming(P, n);
+        // printf("%lf\n", h[n]);
     }
 }
 
@@ -103,6 +93,8 @@ void downSampling(Stereo* x, int size_o, int M, Stereo* y) {
         y[n] = x[n*M];
     }
 }
+
+
 void conv(Stereo* x, double* h, Stereo* y, int P, int size) {
     for (int n = 0; n < size; n++) {
         double y_l = 0, y_r = 0;
@@ -127,6 +119,8 @@ void conv(Stereo* x, double* h, Stereo* y, int P, int size) {
 }
 
 int main(int argc, char* argv[]) {
+    /* Target: 44.1k -> 8k */
+
     /*------------ Initialize file ------------*/
     // Varialbe declare.
     char* inputName = argv[1];
@@ -168,53 +162,54 @@ int main(int argc, char* argv[]) {
     /*------------ Read file end ------------*/
 
     /*------------------ Up Sampling -------------------*/
-    printf("Up sampling.\n");
+    printf("Up sampling L=80.\n");
 
-    int tmpSampleRate = lcm(8000, header.sampleRate);
-    L = tmpSampleRate / currRate;
-    int tmpSize = L * size;
+    int srcFs = 44100, tarFs = 8000;
+    int isClean = 1;
+    int dec = 441;
+    int tmpSampleRate = lcm(srcFs, tarFs);
+    L = 80; // Upsampling 80 times
+    int tmpSize = L * size / dec;
     Stereo* x_tmp = (Stereo*) calloc(tmpSize, sizeof(Stereo));
-
-    // Up sampling
-    upSampling(x, size, L, x_tmp);
-
-    // for(int i = 0; i < tmpSize; i++){
-    //     printf("%d, %d\t", x_tmp[i].left, x_tmp[i].right);
-    // }
-    free(x);
-    /*---------------- Up Sampling End ----------------*/
-
-    /*---------------- Filtering Start ----------------*/
-    printf("Filtering.\n");
-
-    // Delcare freq table
-
-    Stereo* x_c = (Stereo*) calloc(tmpSize, sizeof(Stereo));  // Cutoff data
-    printf("%d\n", x_c[0]);
     double *h = malloc(P * sizeof(double));
-    generateFilter(P, 4000, tmpSampleRate, h, L);
-    
-    // for(int i = 0; i < P; i++) {
-    //     printf("%lf\n", h[i]);
-    // }
+    generateFilter(P, PI/80, tmpSampleRate, h);
 
-    conv(x_tmp, h, x_c, P, tmpSize);
+    double LM_tmp_r, LM_tmp_l;
+    int x_id;
+    for(int i = 0; i < tmpSize; i++){
+        LM_tmp_r = 0;        
+        LM_tmp_l = 0;
+        for(int j = 0; j < P; j++){
+            x_id = i * dec - j;
+            if(x_id < 0) break;
+            
+            // printf("%lf\n", h[j]);
+
+            if(x_id % 80 == 0){
+                x_id /= 80;
+                LM_tmp_r += (double) x[x_id].right * h[j] * L;
+                LM_tmp_l += (double) x[x_id].left * h[j] * L;
+            }
+        }
+        // printf("%lf, %lf\n", LM_tmp_r, LM_tmp_l);
+        
+        x_tmp[i].left = (short) LM_tmp_l;
+        x_tmp[i].right = (short) LM_tmp_r;
+    }
+
 
     /*---------------- Filtering End ----------------*/
 
     /*------------------ Down Sampling -------------------*/
     /*             Origin:44.1k -> Target: 8k             */
-    printf("Down sampling.\n");
-    currRate = 8000;
-    M = tmpSampleRate / currRate;
-    int outputSize = tmpSize / M;
-    printf("%d\n", outputSize);
-    Stereo* x_o = calloc(outputSize, sizeof(Stereo));
+    // printf("Down sampling.\n");
+    // currRate = 8000;
+    // M = tmpSampleRate / currRate;
+    // int outputSize = tmpSize / M;
+    // printf("%d\n", outputSize);
+    // Stereo* x_o = calloc(outputSize, sizeof(Stereo));
 
-    downSampling(x_tmp, outputSize, M, x_o);
-    // for(int i = 0; i < outputSize; i++) {
-    //     printf("%d, %d\n", x_o[i].left, x_o[i].right);
-    // }
+    // downSampling(x_tmp, outputSize, M, x_o);
     
     /*---------------- Down Sampling End ----------------*/
 
@@ -223,10 +218,10 @@ int main(int argc, char* argv[]) {
     header.byteRate =
         header.sampleRate * header.numChannel * header.bitsPerSample / 8;
     header.subChunckSize2 =
-        outputSize * header.bitsPerSample * header.numChannel / 8;
+        tmpSize * header.bitsPerSample * header.numChannel / 8;
 
     fwrite(&header, 1, sizeof(Header), f_output);
-    fwrite(x_o, 1, header.subChunckSize2, f_output);
+    fwrite(x_tmp, 1, header.subChunckSize2, f_output);
     fclose(f_output);
 
     /*------------ Write file end ------------*/
